@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دوال إكسل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F6F0;--card:#FFFFFF;--ink:#1D2A23;--sub:#5C6B62;--line:#D3DACD;--green:#1E6B46;--tint:#E2F0E7;--sel:#F4C542;--selink:#3A2B00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141A16;--card:#1D261F;--ink:#E8EFE9;--sub:#97A89C;--line:#33403A;--green:#5BBE88;--tint:#223A2C;--sel:#F4C542;--selink:#3A2B00}}
+:root[data-theme="dark"]{--bg:#141A16;--card:#1D261F;--ink:#E8EFE9;--sub:#97A89C;--line:#33403A;--green:#5BBE88;--tint:#223A2C;--sel:#F4C542;--selink:#3A2B00}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Tajawal",system-ui,sans-serif;font-size:16px;line-height:1.7;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 32px;background-attachment:fixed}
+.wrap{max-width:720px;margin:0 auto;padding:16px 14px 40px}
+header{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:12px}
+h1{margin:0;font-size:24px;font-weight:700}
+header p{margin:2px 0 0;color:var(--sub);font-size:14px}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+.fx{flex:1;display:flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fx b{padding:8px 12px;background:var(--tint);color:var(--green);font-family:Georgia,serif;font-style:italic;border-inline-end:1px solid var(--line)}
+.fx input{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:8px 10px;outline:0;min-width:0}
+.fx:focus-within{border-color:var(--green);box-shadow:0 0 0 2px var(--tint)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14px;padding:4px 12px;border-radius:4px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--card)}
+.count{color:var(--sub);font-size:13px;margin:4px 2px 8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:8px}
+.item button.head{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+.item button.head:focus-visible{outline:2px solid var(--green);outline-offset:-2px;border-radius:6px}
+.name{direction:ltr;font-family:Consolas,Menlo,monospace;font-weight:700;color:var(--green);background:var(--tint);padding:1px 8px;border-radius:3px;font-size:15px}
+.short{flex:1;font-size:15px}
+.cat{font-size:12px;color:var(--sub)}
+.body{display:none;padding:2px 14px 14px;border-top:1px dashed var(--line)}
+.item.open .body{display:block}
+.lbl{font-size:13px;color:var(--sub);margin:10px 0 2px;font-weight:500}
+.code{direction:ltr;text-align:left;font-family:Consolas,Menlo,monospace;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 10px;overflow-x:auto;white-space:nowrap}
+.res{display:inline-block;margin-top:6px;background:var(--sel);color:var(--selink);font-weight:700;padding:1px 10px;border-radius:3px;font-size:14px}
+.cp{margin-top:10px;border:1px solid var(--green);background:transparent;color:var(--green);font:inherit;font-size:14px;padding:4px 14px;border-radius:4px;cursor:pointer}
+.cp:focus-visible,.chip:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.empty{text-align:center;color:var(--sub);padding:30px 10px}
+.tools{display:flex;justify-content:space-between;align-items:center}
+.theme{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13px;padding:2px 10px;border-radius:4px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="tools"><h1>دوال إكسل</h1><button class="theme" id="theme" type="button">الوضع</button></div>
+<p>ابحث عن الدالة، اقرأ شرحها بالعربي، وانسخ الصيغة جاهزة.</p>
+</header>
+<div class="bar"><label class="fx"><b>fx</b><input id="q" type="search" placeholder="مثال: جمع، VLOOKUP، تاريخ" aria-label="بحث عن دالة"></label></div>
+<div class="chips" id="chips" role="group" aria-label="التصنيفات"></div>
+<div class="count" id="count" aria-live="polite"></div>
+<div id="list"></div>
+</div>
+<script>
+var F=[
+["SUM","رياضيات","يجمع الأرقام","=SUM(A1:A5)","تجمع كل القيم في النطاق من A1 إلى A5. مثال: 10+20+30+40+50","150","جمع جمع الارقام مجموع"],
+["SUMIF","رياضيات","جمع بشرط واحد","=SUMIF(A1:A5,\">20\",B1:B5)","تجمع قيم B فقط عندما تكون قيمة A المقابلة أكبر من 20.","90","جمع بشرط"],
+["SUMIFS","رياضيات","جمع بعدة شروط","=SUMIFS(C:C,A:A,\"جدة\",B:B,\"يناير\")","تجمع عمود C للصفوف التي تحقق كل الشروط معًا: المدينة جدة والشهر يناير.","4,200","جمع بشروط متعددة"],
+["PRODUCT","رياضيات","يضرب الأرقام","=PRODUCT(A1:A3)","تضرب القيم ببعضها. 2×3×4","24","ضرب"],
+["ROUND","رياضيات","تقريب لعدد خانات","=ROUND(3.14159,2)","تقرّب الرقم إلى خانتين عشريتين.","3.14","تقريب"],
+["ROUNDUP","رياضيات","تقريب لأعلى","=ROUNDUP(3.141,2)","تقرّب دائمًا للأعلى مهما كان الباقي.","3.15","تقريب لاعلى"],
+["ABS","رياضيات","القيمة المطلقة","=ABS(-25)","تحذف الإشارة السالبة من الرقم.","25","موجب"],
+["MOD","رياضيات","باقي القسمة","=MOD(10,3)","تعطيك باقي قسمة 10 على 3. مفيدة لمعرفة الزوجي والفردي.","1","باقي"],
+["AVERAGE","إحصاء","المتوسط الحسابي","=AVERAGE(A1:A5)","تجمع القيم وتقسمها على عددها.","30","معدل متوسط"],
+["AVERAGEIF","إحصاء","متوسط بشرط","=AVERAGEIF(A:A,\"جدة\",B:B)","متوسط قيم B للصفوف التي مدينتها جدة فقط.","520","معدل بشرط"],
+["MAX","إحصاء","أكبر قيمة","=MAX(A1:A5)","ترجع أكبر رقم في النطاق.","50","اعلى اكبر"],
+["MIN","إحصاء","أصغر قيمة","=MIN(A1:A5)","ترجع أصغر رقم في النطاق.","10","ادنى اصغر"],
+["COUNT","إحصاء","عدّ الخلايا الرقمية","=COUNT(A1:A10)","تعدّ الخلايا التي فيها أرقام فقط وتتجاهل النصوص.","8","عد"],
+["COUNTA","إحصاء","عدّ الخلايا غير الفارغة","=COUNTA(A1:A10)","تعدّ أي خلية فيها محتوى، رقمًا أو نصًا.","10","عد غير فارغ"],
+["COUNTIF","إحصاء","عدّ بشرط","=COUNTIF(A:A,\"مكتمل\")","تعدّ كم خلية تحتوي على كلمة «مكتمل».","12","عد بشرط"],
+["COUNTIFS","إحصاء","عدّ بعدة شروط","=COUNTIFS(A:A,\"جدة\",B:B,\">100\")","تعدّ الصفوف التي تحقق الشرطين معًا.","7","عد بشروط"],
+["RANK","إحصاء","ترتيب رقم في قائمة","=RANK(B2,B2:B10,0)","تعطي ترتيب القيمة بين القيم، 0 يعني من الأكبر للأصغر.","3","ترتيب"],
+["IF","منطق","إذا الشرطية","=IF(A1>=50,\"ناجح\",\"راسب\")","إذا تحقق الشرط تعطي القيمة الأولى، وإلا تعطي الثانية.","ناجح","اذا شرط"],
+["IFS","منطق","عدة شروط بدون تداخل","=IFS(A1>=90,\"ممتاز\",A1>=70,\"جيد\",TRUE,\"ضعيف\")","تفحص الشروط بالترتيب وتعطي نتيجة أول شرط صحيح.","جيد","اذا متعددة"],
+["AND","منطق","كل الشروط صحيحة","=AND(A1>0,B1>0)","ترجع TRUE فقط إذا تحقق الشرطان معًا.","TRUE","و"],
+["OR","منطق","أحد الشروط صحيح","=OR(A1>0,B1>0)","ترجع TRUE إذا تحقق أي شرط منهما.","TRUE","او"],
+["NOT","منطق","عكس القيمة المنطقية","=NOT(A1>5)","تحوّل TRUE إلى FALSE والعكس.","FALSE","عكس"],
+["IFERROR","منطق","إخفاء الأخطاء","=IFERROR(A1/B1,0)","إذا ظهر خطأ مثل #DIV/0! تعطي القيمة البديلة بدلًا منه.","0","خطأ"],
+["VLOOKUP","بحث","بحث رأسي في جدول","=VLOOKUP(E1,A2:C10,3,FALSE)","تبحث عن E1 في العمود الأول من الجدول وترجع القيمة من العمود الثالث. FALSE تعني تطابقًا تامًا.","جدة","بحث فلوكاب"],
+["XLOOKUP","بحث","بحث حديث وأسهل","=XLOOKUP(E1,A:A,C:C,\"غير موجود\")","تبحث في عمود وترجع من عمود آخر، وتعمل في الاتجاهين. متوفرة في إكسل 2021 وMicrosoft 365.","جدة","بحث اكس لوك اب"],
+["HLOOKUP","بحث","بحث أفقي","=HLOOKUP(\"الراتب\",A1:F3,2,FALSE)","مثل VLOOKUP لكن تبحث في الصف الأول وترجع من صف أسفله.","5000","بحث افقي"],
+["INDEX","بحث","قيمة من موقع محدد","=INDEX(B2:B10,3)","ترجع العنصر الثالث من النطاق.","750","فهرس"],
+["MATCH","بحث","موقع قيمة في نطاق","=MATCH(\"علي\",A2:A10,0)","ترجع رقم الموضع الذي وُجدت فيه القيمة. تُستخدم كثيرًا مع INDEX.","4","مطابقة موقع"],
+["CONCAT","نصوص","دمج النصوص","=CONCAT(A1,\" \",B1)","تدمج محتوى الخليتين في خلية واحدة.","أحمد علي","دمج ربط"],
+["TEXTJOIN","نصوص","دمج مع فاصل","=TEXTJOIN(\"، \",TRUE,A1:A4)","تدمج نطاقًا كاملًا بفاصل تختاره وتتجاهل الفارغ.","أ، ب، ج","دمج بفاصل"],
+["LEFT","نصوص","أول حروف من اليمين","=LEFT(A1,3)","تأخذ أول 3 حروف من بداية النص.","050","يسار"],
+["RIGHT","نصوص","آخر حروف النص","=RIGHT(A1,4)","تأخذ آخر 4 حروف من النص.","3430","يمين"],
+["MID","نصوص","جزء من وسط النص","=MID(A1,2,3)","تبدأ من الحرف الثاني وتأخذ 3 حروف.","bcd","وسط"],
+["LEN","نصوص","عدد حروف النص","=LEN(A1)","تعدّ حروف النص بما فيها المسافات.","10","طول عدد حروف"],
+["TRIM","نصوص","إزالة المسافات الزائدة","=TRIM(A1)","تحذف المسافات من أول النص وآخره وتترك مسافة واحدة بين الكلمات.","أحمد علي","مسافات تنظيف"],
+["SUBSTITUTE","نصوص","استبدال نص بنص","=SUBSTITUTE(A1,\"-\",\"\")","تحذف الشرطات من النص. مفيدة لتنظيف أرقام الجوال.","0542103430","استبدال"],
+["TEXT","نصوص","تنسيق رقم أو تاريخ كنص","=TEXT(A1,\"dd/mm/yyyy\")","تعرض التاريخ بالشكل الذي تحدده.","24/10/2026","تنسيق"],
+["TODAY","تاريخ ووقت","تاريخ اليوم","=TODAY()","ترجع تاريخ اليوم وتتحدث تلقائيًا كل يوم.","24/10/2026","اليوم"],
+["NOW","تاريخ ووقت","التاريخ والوقت الآن","=NOW()","ترجع التاريخ والساعة الحالية.","24/10/2026 14:30","الان"],
+["DATEDIF","تاريخ ووقت","الفرق بين تاريخين","=DATEDIF(A1,TODAY(),\"Y\")","تحسب عدد السنوات بين تاريخين. استخدم \"M\" للأشهر و\"D\" للأيام. مفيدة لحساب العمر.","32","عمر فرق تاريخ"],
+["EDATE","تاريخ ووقت","إضافة أشهر لتاريخ","=EDATE(A1,3)","ترجع التاريخ بعد 3 أشهر من التاريخ في A1.","24/01/2027","شهر اضافة"],
+["NETWORKDAYS","تاريخ ووقت","أيام العمل بين تاريخين","=NETWORKDAYS(A1,B1)","تعدّ أيام العمل وتستثني السبت والأحد دائمًا. لاعتبار الجمعة والسبت عطلة، استخدم NETWORKDAYS.INTL.","22","ايام عمل"],
+['PMT','مالية','القسط الدوري لقرض','=PMT(0.05/12,60,-100000)','قسط شهري لقرض 100,000 بفائدة 5% سنويًا لمدة 60 شهرًا.','1,887',''],
+['FV','مالية','القيمة المستقبلية','=FV(0.05/12,60,-500)','قيمة ما تدخره لو أودعت 500 شهريًا لمدة 60 شهرًا بفائدة 5%.','34,003',''],
+['PV','مالية','القيمة الحالية','=PV(0.05/12,60,-1887)','المبلغ الذي يقابل أقساطًا شهرية قيمتها 1,887 لمدة 60 شهرًا.','100,000 تقريبًا',''],
+['NPV','مالية','صافي القيمة الحالية','=NPV(0.1,B1:B3)','تخصم التدفقات النقدية المستقبلية بمعدل 10%. اطرح الاستثمار الأولي بنفسك.','2,487',''],
+['IRR','مالية','معدل العائد الداخلي','=IRR(A1:A4)','معدل العائد لسلسلة تدفقات، مثل: -1000 ثم 400 ثلاث مرات.','9.7%',''],
+['NPER','مالية','عدد الدفعات','=NPER(0.05/12,-1887,100000)','كم شهرًا تحتاج لسداد القرض بالقسط المحدد.','60',''],
+['SLN','مالية','إهلاك بالقسط الثابت','=SLN(10000,1000,5)','إهلاك سنوي لأصل قيمته 10,000 وخردته 1,000 وعمره 5 سنوات.','1,800',''],
+['FILTER','مصفوفات','تصفية بيانات بشرط','=FILTER(A2:B10,B2:B10>100)','ترجع الصفوف التي تحقق الشرط فقط. Microsoft 365 و2021.','الصفوف المطابقة',''],
+['SORT','مصفوفات','ترتيب نطاق','=SORT(A2:A10,1,-1)','ترتب القائمة تنازليًا (-1) أو تصاعديًا (1).','قائمة مرتبة',''],
+['UNIQUE','مصفوفات','قائمة بدون تكرار','=UNIQUE(A2:A20)','ترجع القيم الفريدة فقط.','قائمة فريدة',''],
+['SEQUENCE','مصفوفات','سلسلة أرقام','=SEQUENCE(5)','تولّد الأرقام من 1 إلى 5 في عمود.','1 إلى 5',''],
+['LET','مصفوفات','تسمية قيمة داخل الصيغة','=LET(x,A1*2,x+10)','تعرّف اسمًا مؤقتًا لتقصير الصيغ الطويلة.','يعتمد على A1',''],
+['TRANSPOSE','مصفوفات','قلب الصفوف والأعمدة','=TRANSPOSE(A1:C1)','تحوّل صفًّا إلى عمود أو العكس.','عمود من صف',''],
+['XMATCH','بحث','موقع قيمة (حديثة)','=XMATCH("علي",A2:A10)','بديل MATCH أسهل وتطابق تام افتراضيًا.','4',''],
+['ISBLANK','معلومات','هل الخلية فارغة','=ISBLANK(A1)','ترجع TRUE إذا كانت الخلية فارغة تمامًا.','TRUE',''],
+['ISNUMBER','معلومات','هل القيمة رقم','=ISNUMBER(A1)','ترجع TRUE إذا كانت القيمة رقمًا.','TRUE',''],
+['ISTEXT','معلومات','هل القيمة نص','=ISTEXT(A1)','ترجع TRUE إذا كانت القيمة نصًا.','FALSE',''],
+['ISERROR','معلومات','هل فيها خطأ','=ISERROR(A1/B1)','ترجع TRUE إذا كانت النتيجة خطأ من أي نوع.','FALSE',''],
+['ISNA','معلومات','هل الخطأ #N/A','=ISNA(VLOOKUP(E1,A:B,2,0))','تكشف خطأ عدم وجود القيمة في البحث.','FALSE',''],
+['UPPER','نصوص','حروف كبيرة','=UPPER("excel")','تحوّل الحروف الإنجليزية إلى كبيرة.','EXCEL',''],
+['LOWER','نصوص','حروف صغيرة','=LOWER("EXCEL")','تحوّل الحروف الإنجليزية إلى صغيرة.','excel',''],
+['PROPER','نصوص','أول حرف كبير','=PROPER("ahmed ali")','تجعل أول حرف من كل كلمة كبيرًا.','Ahmed Ali',''],
+['FIND','نصوص','موقع نص (حساس للحروف)','=FIND("@",A1)','ترجع موضع الرمز داخل النص. تفرّق بين الكبير والصغير.','2',''],
+['SEARCH','نصوص','موقع نص (غير حساس)','=SEARCH("ali",A1)','مثل FIND لكن لا تفرّق بين الكبير والصغير.','7',''],
+['REPLACE','نصوص','استبدال بحسب الموضع','=REPLACE(A1,1,3,"***")','تستبدل أول 3 حروف بنجوم.','***2103430',''],
+['REPT','نصوص','تكرار نص','=REPT("*",5)','تكرر النص عدد المرات المحدد.','*****',''],
+['VALUE','نصوص','تحويل نص إلى رقم','=VALUE("123")','تحوّل رقمًا مكتوبًا كنص إلى رقم حقيقي.','123',''],
+['EXACT','نصوص','مقارنة نصين بدقة','=EXACT(A1,B1)','ترجع TRUE إذا تطابق النصان تمامًا بما فيها حالة الحروف.','FALSE',''],
+['TEXTSPLIT','نصوص','تقسيم نص بفاصل','=TEXTSPLIT(A1,",")','توزع أجزاء النص على خلايا متجاورة. Microsoft 365.','عدة خلايا',''],
+['CLEAN','نصوص','حذف الرموز غير المطبوعة','=CLEAN(A1)','تنظف النص المنسوخ من مصادر خارجية.','نص نظيف',''],
+['DATE','تاريخ ووقت','تكوين تاريخ','=DATE(2026,10,24)','تبني تاريخًا من سنة وشهر ويوم.','24/10/2026',''],
+['YEAR','تاريخ ووقت','سنة التاريخ','=YEAR(A1)','تستخرج السنة من التاريخ.','2026',''],
+['MONTH','تاريخ ووقت','شهر التاريخ','=MONTH(A1)','تستخرج رقم الشهر.','10',''],
+['DAY','تاريخ ووقت','يوم التاريخ','=DAY(A1)','تستخرج رقم اليوم في الشهر.','24',''],
+['WEEKDAY','تاريخ ووقت','رقم يوم الأسبوع','=WEEKDAY(A1,2)','النوع 2 يجعل الاثنين 1 والأحد 7.','6',''],
+['EOMONTH','تاريخ ووقت','آخر يوم في الشهر','=EOMONTH(A1,0)','ترجع آخر يوم من شهر التاريخ. استخدم 1 للشهر التالي.','31/10/2026',''],
+['WORKDAY','تاريخ ووقت','تاريخ بعد أيام عمل','=WORKDAY(A1,5)','تضيف 5 أيام عمل بدون السبت والأحد.','30/10/2026',''],
+['DAYS','تاريخ ووقت','عدد الأيام بين تاريخين','=DAYS(B1,A1)','تطرح تاريخ البداية من النهاية.','7',''],
+['POWER','رياضيات','رفع لأس','=POWER(2,10)','تحسب 2 أس 10.','1,024',''],
+['SQRT','رياضيات','الجذر التربيعي','=SQRT(81)','ترجع الجذر التربيعي للرقم.','9',''],
+['INT','رياضيات','الجزء الصحيح','=INT(7.9)','تقرّب لأقرب عدد صحيح أصغر.','7',''],
+['CEILING','رياضيات','تقريب لأعلى مضاعف','=CEILING(7.2,5)','تقرّب لأقرب مضاعف للخمسة للأعلى.','10',''],
+['FLOOR','رياضيات','تقريب لأسفل مضاعف','=FLOOR(7.8,5)','تقرّب لأقرب مضاعف للخمسة للأسفل.','5',''],
+['RANDBETWEEN','رياضيات','رقم عشوائي بين حدين','=RANDBETWEEN(1,100)','رقم صحيح عشوائي، يتغير مع كل حساب.','عشوائي',''],
+['SUMPRODUCT','رياضيات','مجموع حاصل الضرب','=SUMPRODUCT(A1:A3,B1:B3)','تضرب كل قيمة بمقابلتها ثم تجمع. مفيدة للكمية × السعر.','يعتمد على القيم',''],
+['SUBTOTAL','رياضيات','مجموع جزئي يحترم التصفية','=SUBTOTAL(9,A1:A10)','الرقم 9 يعني جمعًا، وتتجاهل الصفوف المخفية بالتصفية.','المجموع الظاهر',''],
+['MEDIAN','إحصاء','الوسيط','=MEDIAN(A1:A5)','القيمة التي في منتصف القائمة بعد ترتيبها.','30',''],
+['LARGE','إحصاء','أكبر قيمة رقم k','=LARGE(A1:A10,2)','ترجع ثاني أكبر قيمة.','45',''],
+['SMALL','إحصاء','أصغر قيمة رقم k','=SMALL(A1:A10,2)','ترجع ثاني أصغر قيمة.','15',''],
+['STDEV.S','إحصاء','الانحراف المعياري','=STDEV.S(A1:A10)','تقيس مدى تشتت القيم عن متوسطها في عينة.','يعتمد على القيم','']
+];
+var cats=["الكل"].concat(F.map(function(f){return f[1]}).filter(function(c,i,a){return a.indexOf(c)===i}));
+var cur="الكل",q="";
+var chips=document.getElementById("chips"),list=document.getElementById("list"),count=document.getElementById("count"),input=document.getElementById("q");
+function norm(s){return s.toLowerCase().replace(/[\u064B-\u0652]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي")}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function drawChips(){chips.innerHTML="";cats.forEach(function(c){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cur);b.onclick=function(){cur=c;drawChips();draw()};chips.appendChild(b)})}
+function draw(){
+var n=norm(q.trim());
+var r=F.filter(function(f){return(cur==="الكل"||f[1]===cur)&&(!n||norm(f[0]+" "+f[1]+" "+f[2]+" "+f[6]).indexOf(n)>-1)});
+count.textContent=r.length+" دالة";
+if(!r.length){list.innerHTML='<div class="empty">ما لقينا دالة بهذا الاسم. جرّب كلمة أخرى مثل «جمع» أو «بحث».</div>';return}
+list.innerHTML=r.map(function(f,i){return '<div class="item" data-i="'+F.indexOf(f)+'"><button class="head" type="button" aria-expanded="false"><span class="name">'+f[0]+'</span><span class="short">'+f[2]+'</span><span class="cat">'+f[1]+'</span></button><div class="body"><div class="lbl">الصيغة</div><div class="code">'+esc(f[3])+'</div><div class="lbl">الشرح</div><div>'+esc(f[4])+'</div><span class="res">النتيجة: '+esc(f[5])+'</span><br><button class="cp" type="button">نسخ الصيغة</button></div></div>'}).join("");
+}
+list.addEventListener("click",function(e){
+var item=e.target.closest(".item");if(!item)return;
+if(e.target.closest(".cp")){var t=F[item.dataset.i][3],b=e.target.closest(".cp");
+var done=function(){b.textContent="تم النسخ";setTimeout(function(){b.textContent="نسخ الصيغة"},1500)};
+try{navigator.clipboard.writeText(t).then(done,function(){fallback(t);done()})}catch(x){fallback(t);done()}return}
+if(e.target.closest(".head")){var o=item.classList.toggle("open");item.querySelector(".head").setAttribute("aria-expanded",o)}
+});
+function fallback(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(x){}document.body.removeChild(a)}
+input.addEventListener("input",function(){q=input.value;draw()});
+document.getElementById("theme").onclick=function(){var r=document.documentElement,d=r.getAttribute("data-theme")==="dark"||(!r.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme:dark)").matches);r.setAttribute("data-theme",d?"light":"dark")};
+drawChips();draw();
+</script>
+</body>
+</html>
